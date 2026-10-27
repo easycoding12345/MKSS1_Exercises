@@ -1,5 +1,10 @@
 package remotecontrol;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import remotecontrol.command.ICommand;
+import remotecontrol.model.ActionButton;
+
 /**
  *  Base implementation for the remote control.
  */
@@ -7,15 +12,29 @@ public class RemoteControl implements IRemoteControl {
 
     public final static int NO_OF_ACTION_BUTTONS = 3;
 
-    // TODO: Data structure(s) for the action buttons
-    // TODO: Data structure(s) for the undo button / history
+    // Datenstruktur fuer die Aktionsbuttons (Array, Index = Buttonnummer)
+    private final ActionButton[] actionButtons;
+    // Datenstruktur fuer Undo-Button / Historie: Stack der zuletzt gedrueckten (undo-baren) Buttons
+    private final Deque<ActionButton> history;
 
     public RemoteControl() {
-        // TODO: Initialize data structures for the action buttons
-        // TODO: Initialize data structures for the undo button / history
+        // Aktionsbuttons initialisieren (zunaechst unkonfiguriert = null)
+        actionButtons = new ActionButton[NO_OF_ACTION_BUTTONS];
+        // Historie initialisieren
+        history = new ArrayDeque<>();
     }
 
-    // TODO: Implement method for configuration of action buttons (cf. TODO in interface IRemoteControl)
+    @Override
+    public void setActionButton(int no, ICommand activate, ICommand deactivate) {
+        checkButtonNumber(no);
+        actionButtons[no] = new ActionButton(activate, deactivate);
+    }
+
+    @Override
+    public void setActionButton(int no, ICommand action) {
+        checkButtonNumber(no);
+        actionButtons[no] = new ActionButton(action, null);
+    }
 
     /**
      * The action button was pressed.
@@ -25,8 +44,18 @@ public class RemoteControl implements IRemoteControl {
      */
     @Override
     public void actionButtonPressed(int no) {
-        // TODO: Execute action according to button status
-        // TODO: Update undo button / history
+        checkButtonNumber(no);
+        ActionButton button = actionButtons[no];
+        if (button == null) {
+            System.out.println("Button " + no + " ist nicht konfiguriert.");
+            return;
+        }
+        // Aktion entsprechend dem Buttonstatus ausfuehren
+        button.press();
+        // Undo-Historie aktualisieren (nur Buttons mit Gegenaktion sind undo-bar)
+        if (button.isToggle()) {
+            history.push(button);
+        }
     }
 
     /**
@@ -35,6 +64,17 @@ public class RemoteControl implements IRemoteControl {
      */
     @Override
     public void undoButtonPressed() {
-        // TODO: Execute undo action
+        if (history.isEmpty()) {
+            System.out.println("Nichts rueckgaengig zu machen.");
+            return;
+        }
+        // Letzte Aktion rueckgaengig machen (Gegenaktion ausfuehren)
+        history.pop().undo();
+    }
+
+    private void checkButtonNumber(int no) {
+        if (no < 0 || no >= NO_OF_ACTION_BUTTONS) {
+            throw new IllegalArgumentException("Ungueltige Buttonnummer: " + no);
+        }
     }
 }
