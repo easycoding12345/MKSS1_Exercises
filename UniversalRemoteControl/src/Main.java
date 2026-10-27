@@ -1,4 +1,6 @@
 import remotecontrol.RemoteControl;
+import remotecontrol.command.*;
+import remotecontrol.device.MediaPlayer;
 
 /**
  * Main for testing the functionality
@@ -7,9 +9,15 @@ public class Main {
 	public static void main(String[] args) {
 		RemoteControl mediaPlayerRemote = new RemoteControl();
 
-		// TODO: configure the buttons for the media player remote with activate / deactivate actions
+		// Receiver: der Media Player
+		MediaPlayer player = new MediaPlayer();
 
-		// TODO: test the functionality by pressing different buttons similar to below
+		// Buttons mit Activate-/Deactivate-Aktionen konfigurieren
+		mediaPlayerRemote.setActionButton(0, new OnCommand(player), new OffCommand(player));
+		mediaPlayerRemote.setActionButton(1, new PlayCommand(player), new PauseCommand(player));
+		mediaPlayerRemote.setActionButton(2, new NextCommand(player), new PreviousCommand(player));
+
+		// Funktionalitaet testen
 		mediaPlayerRemote.actionButtonPressed(0);
 		mediaPlayerRemote.actionButtonPressed(1);
 		mediaPlayerRemote.actionButtonPressed(2);
@@ -18,10 +26,9 @@ public class Main {
 
 		mediaPlayerRemote.actionButtonPressed(1);
 
-        mediaPlayerRemote.undoButtonPressed();
-        mediaPlayerRemote.undoButtonPressed();
+		mediaPlayerRemote.undoButtonPressed();
+		mediaPlayerRemote.undoButtonPressed();
 
 		mediaPlayerRemote.actionButtonPressed(0);
 	}
 }
-
